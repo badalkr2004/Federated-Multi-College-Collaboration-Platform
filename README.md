@@ -1,7 +1,7 @@
 <div align="center">
   <img src="./frontend/one-collab/public/logoc-1.webp" alt="CollabOne Logo" width="195" />
   <br />
-  <img src="./frontend/one-collab/public/branding-image.png" alt="Hackathon Branding" width="200" />
+  <img src="./frontend/one-collab/public/branding-image.png" alt="Hackathon Branding" width="300" />
 </div>
 
 # CollabOne — Federated Multi-College Platform
