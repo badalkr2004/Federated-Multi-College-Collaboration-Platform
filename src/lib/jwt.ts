@@ -4,9 +4,10 @@ import { errors } from './errors.js';
 
 export interface JWTPayload {
   userId: string;
-  collegeId: string;
-  collegeSlug: string;
+  collegeId: string | null;    // null for super_admin
+  collegeSlug: string | null;
   email: string;
+  role: 'user' | 'super_admin';
 }
 
 export function signToken(payload: JWTPayload): string {

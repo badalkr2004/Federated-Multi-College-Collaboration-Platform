@@ -9,7 +9,12 @@ router.use(authenticate);
 // GET /api/v1/match/projects — ranked projects for current user
 router.get('/projects', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const matches = await matchService.matchProjectsForUser(req.user!.userId);
+    const { userId, collegeId } = req.user!;
+    if (!collegeId) {
+      sendSuccess(res, []); // super_admin has no college
+      return;
+    }
+    const matches = await matchService.matchProjectsForUser(userId, collegeId);
     sendSuccess(res, matches);
   } catch (err) {
     next(err);
@@ -21,9 +26,14 @@ router.get(
   '/users/:projectId',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const { collegeId } = req.user!;
+      if (!collegeId) {
+        sendSuccess(res, []);
+        return;
+      }
       const matches = await matchService.matchUsersForProject(
         req.params.projectId,
-        req.user!.collegeId,
+        collegeId,
       );
       sendSuccess(res, matches);
     } catch (err) {

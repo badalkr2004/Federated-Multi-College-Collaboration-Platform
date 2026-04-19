@@ -25,7 +25,9 @@ export const errors = {
   badRequest: (msg: string, details?: unknown): AppError =>
     new AppError(400, 'BAD_REQUEST', msg, details),
   tenantMismatch: (): AppError =>
-    new AppError(403, 'TENANT_MISMATCH', 'Cross-tenant access denied'),
+    new AppError(403, 'TENANT_MISMATCH', 'Token not valid for this domain'),
+  unknownTenant: (): AppError =>
+    new AppError(403, 'UNKNOWN_TENANT', 'Domain not registered'),
   internal: (msg = 'Internal server error'): AppError =>
     new AppError(500, 'INTERNAL_ERROR', msg),
 };

@@ -2,7 +2,7 @@ Federated Multi-College Platform — Context Log
 
 ## Status: ✅ Backend Complete ✅ Frontend Complete
 
-## Live at: http://localhost:3000
+## Live at: http://localhost:8000
 
 ---
 

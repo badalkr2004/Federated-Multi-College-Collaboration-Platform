@@ -19,7 +19,7 @@ router.post(
         req.user!.userId,
         req.user!.collegeId,
       );
-      sendSuccess(res, project, 'Project created', 201);
+      sendSuccess(res, project, 201, 'Project created');
     } catch (err) {
       next(err);
     }
@@ -39,7 +39,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction): Promise
 // GET /api/v1/projects/:id
 router.get('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const data = await projectsService.getProjectById(req.params.id, req.user!.collegeId);
+    const data = await projectsService.getProject(req.params.id, req.user!.collegeId);
     sendSuccess(res, data);
   } catch (err) {
     next(err);
@@ -52,8 +52,8 @@ router.patch(
   validate(UpdateProjectSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const project = await projectsService.updateProject(req.params.id, req.body, req.user!.userId);
-      sendSuccess(res, project, 'Project updated');
+      const project = await projectsService.updateProject(req.params.id, req.body, req.user!.userId, req.user!.collegeId);
+      sendSuccess(res, project, 200, 'Project updated');
     } catch (err) {
       next(err);
     }
@@ -64,7 +64,7 @@ router.patch(
 router.post('/:id/join', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     await projectsService.joinProject(req.params.id, req.user!.userId, req.user!.collegeId);
-    sendSuccess(res, null, 'Joined project successfully');
+    sendSuccess(res, null, 200, 'Joined project successfully');
   } catch (err) {
     next(err);
   }
@@ -74,7 +74,7 @@ router.post('/:id/join', async (req: Request, res: Response, next: NextFunction)
 router.delete('/:id/leave', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     await projectsService.leaveProject(req.params.id, req.user!.userId);
-    sendSuccess(res, null, 'Left project successfully');
+    sendSuccess(res, null, 200, 'Left project successfully');
   } catch (err) {
     next(err);
   }

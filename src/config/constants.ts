@@ -6,7 +6,7 @@ export const CONSTANTS = {
 
   // Match
   MATCH_TOP_N: 10,
-  MATCH_CACHE_TTL: 300, // 5 minutes
+  MATCH_CACHE_TTL: 300, // 5 minutes in seconds
 
   // Reputation
   REPUTATION_RATING_WEIGHT: 0.6,
@@ -14,7 +14,12 @@ export const CONSTANTS = {
 
   // Rate limiting
   AUTH_RATE_LIMIT_MAX: 10,
-  AUTH_RATE_LIMIT_WINDOW_MS: 60 * 1000,  // 1 min
+  AUTH_RATE_LIMIT_WINDOW_MS: 60 * 1000,
   API_RATE_LIMIT_MAX: 100,
-  API_RATE_LIMIT_WINDOW_MS: 60 * 1000,   // 1 min
+  API_RATE_LIMIT_WINDOW_MS: 60 * 1000,
+  ONBOARDING_RATE_LIMIT_MAX: 5,
+  ONBOARDING_RATE_LIMIT_WINDOW_MS: 60 * 60 * 1000, // 1 hour
+
+  // API key
+  API_KEY_PREFIX: 'cc_live_',
 } as const;

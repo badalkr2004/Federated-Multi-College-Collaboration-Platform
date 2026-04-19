@@ -1,0 +1,689 @@
+{
+  "info": {
+    "_postman_id": "collabhub-v2-federated-platform",
+    "name": "CollabHub v2 — Federated Multi-College Platform",
+    "description": "Complete API collection for the federated multi-college collaboration platform. Includes onboarding, admin, tenant auth, users, projects, matchmaking, reputation, and messaging.\n\n**Setup:**\n1. Add to hosts file: `127.0.0.1 projects.a.localhost` and `127.0.0.1 projects.b.localhost`\n2. Start server: `bun run dev`\n3. Run seed: `bun run db:seed`\n4. Use 'Admin Login' first to get super_admin_token\n5. Use 'Login as Alice' to get alice_token",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000", "type": "string" },
+    {
+      "key": "college_a_host",
+      "value": "projects.a.localhost",
+      "type": "string"
+    },
+    {
+      "key": "college_b_host",
+      "value": "projects.b.localhost",
+      "type": "string"
+    },
+    {
+      "key": "college_a_key",
+      "value": "cc_live_collegea000000000000000000000000000",
+      "type": "string"
+    },
+    {
+      "key": "college_b_key",
+      "value": "cc_live_collegeb000000000000000000000000000",
+      "type": "string"
+    },
+    { "key": "super_admin_token", "value": "", "type": "string" },
+    { "key": "alice_token", "value": "", "type": "string" },
+    { "key": "bob_token", "value": "", "type": "string" },
+    { "key": "dave_token", "value": "", "type": "string" },
+    { "key": "eve_token", "value": "", "type": "string" },
+    { "key": "alice_id", "value": "", "type": "string" },
+    { "key": "dave_id", "value": "", "type": "string" },
+    { "key": "request_id", "value": "", "type": "string" },
+    { "key": "project_id", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "🏥 Health Check",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔑 Platform Admin",
+      "description": "Super admin endpoints — no tenant context required",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resp = pm.response.json();",
+                  "if (resp.success) {",
+                  "  pm.collectionVariables.set('super_admin_token', resp.data.token);",
+                  "  console.log('✅ Super admin token saved');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/admin/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@platform.ac.in\",\n  \"password\": \"SuperSecurePass123!\"\n}"
+            },
+            "description": "Login as super admin. Stores token in collection variable."
+          }
+        },
+        {
+          "name": "List All Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/requests",
+              "query": [
+                { "key": "status", "value": "pending", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Pending Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/admin/requests?status=pending"
+          }
+        },
+        {
+          "name": "Approve Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/admin/requests/{{request_id}}/approve",
+            "description": "Set request_id variable first. Auto-provisions college with generated API key."
+          }
+        },
+        {
+          "name": "Reject Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/admin/requests/{{request_id}}/reject",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Domain format does not meet platform requirements.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List All Colleges",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/admin/colleges"
+          }
+        },
+        {
+          "name": "Deactivate College",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/admin/colleges/{{college_id}}/deactivate",
+            "description": "Immediately evicts from tenant cache — next request from that domain gets 403."
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 Onboarding",
+      "description": "No auth, no tenant. Rate limited to 5 req/hour.",
+      "item": [
+        {
+          "name": "Submit College Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resp = pm.response.json();",
+                  "if (resp.success) {",
+                  "  pm.collectionVariables.set('request_id', resp.data.id);",
+                  "  console.log('✅ Request ID saved:', resp.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/onboarding/request",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"College C\",\n  \"domain\": \"projects.c.localhost\",\n  \"emailDomain\": \"@c.ac.in\",\n  \"contactName\": \"Dr. Smith\",\n  \"contactEmail\": \"smith@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Check Request Status",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/onboarding/request/{{request_id}}/status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Auth — College A",
+      "description": "Tenant-scoped auth for College A. Requires Host + X-College-Key headers.",
+      "item": [
+        {
+          "name": "Register New User (College A)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "X-College-Key", "value": "{{college_a_key}}" }
+            ],
+            "url": "{{base_url}}/api/v1/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Student\",\n  \"email\": \"new@a.ac.in\",\n  \"password\": \"Pass1234!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login as Alice",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resp = pm.response.json();",
+                  "if (resp.success) {",
+                  "  pm.collectionVariables.set('alice_token', resp.data.token);",
+                  "  pm.collectionVariables.set('alice_id', resp.data.user.id);",
+                  "  console.log('✅ Alice token saved. ID:', resp.data.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "X-College-Key", "value": "{{college_a_key}}" }
+            ],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@a.ac.in\",\n  \"password\": \"Pass1234!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login as Bob",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resp = pm.response.json();",
+                  "if (resp.success) {",
+                  "  pm.collectionVariables.set('bob_token', resp.data.token);",
+                  "  console.log('✅ Bob token saved');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "X-College-Key", "value": "{{college_a_key}}" }
+            ],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bob@a.ac.in\",\n  \"password\": \"Pass1234!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Me (Alice)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/auth/me"
+          }
+        },
+        {
+          "name": "Logout (Alice)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Auth — College B",
+      "item": [
+        {
+          "name": "Login as Dave",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resp = pm.response.json();",
+                  "if (resp.success) {",
+                  "  pm.collectionVariables.set('dave_token', resp.data.token);",
+                  "  pm.collectionVariables.set('dave_id', resp.data.user.id);",
+                  "  console.log('✅ Dave token saved. ID:', resp.data.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Host", "value": "{{college_b_host}}" },
+              { "key": "X-College-Key", "value": "{{college_b_key}}" }
+            ],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"dave@b.ac.in\",\n  \"password\": \"Pass1234!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login as Eve",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resp = pm.response.json();",
+                  "if (resp.success) {",
+                  "  pm.collectionVariables.set('eve_token', resp.data.token);",
+                  "  console.log('✅ Eve token saved');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Host", "value": "{{college_b_host}}" },
+              { "key": "X-College-Key", "value": "{{college_b_key}}" }
+            ],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"eve@b.ac.in\",\n  \"password\": \"Pass1234!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "❌ ISOLATION: Use Alice JWT on College B (should get TENANT_MISMATCH)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Host", "value": "{{college_b_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/auth/me",
+            "description": "This MUST return 403 TENANT_MISMATCH — demonstrates cross-tenant JWT rejection."
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Users",
+      "item": [
+        {
+          "name": "Get My Profile (Alice)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/users/me"
+          }
+        },
+        {
+          "name": "Update Profile (Alice)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/users/me",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice Smith\",\n  \"bio\": \"Full-stack dev at College A, ML enthusiast\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Skills (Alice) — Clears Match Cache",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/users/me/skills",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skills\": [\"React\", \"Python\", \"TypeScript\", \"ML\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get User by ID (Dave, from Alice's token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/users/{{dave_id}}",
+            "description": "Alice (College A) can view Dave (College B) if they share a project."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚀 Projects",
+      "item": [
+        {
+          "name": "Create Cross-College Project (Alice)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resp = pm.response.json();",
+                  "if (resp.success) {",
+                  "  pm.collectionVariables.set('project_id', resp.data.id);",
+                  "  console.log('✅ Project ID saved:', resp.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/projects",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"AI Research Hub\",\n  \"description\": \"Collaborative AI research platform for students.\",\n  \"requiredSkills\": [\"Python\", \"ML\", \"React\"],\n  \"crossCollege\": true,\n  \"maxMembers\": 6\n}"
+            }
+          }
+        },
+        {
+          "name": "List Projects (College A — own + cross-college)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/projects",
+              "query": [
+                { "key": "status", "value": "open", "disabled": true },
+                { "key": "skill", "value": "Python", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Project Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/projects/{{project_id}}"
+          }
+        },
+        {
+          "name": "Update Project (Alice — owner only)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/projects/{{project_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_progress\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Dave Joins Cross-College Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Host", "value": "{{college_b_host}}" },
+              { "key": "Authorization", "value": "Bearer {{dave_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/projects/{{project_id}}/join",
+            "description": "Dave (College B) joins Alice's cross-college project. No collegeId restriction."
+          }
+        },
+        {
+          "name": "Dave Leaves Project",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Host", "value": "{{college_b_host}}" },
+              { "key": "Authorization", "value": "Bearer {{dave_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/projects/{{project_id}}/leave"
+          }
+        },
+        {
+          "name": "❌ ISOLATION: College B sees zero private College A projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Host", "value": "{{college_b_host}}" },
+              { "key": "Authorization", "value": "Bearer {{dave_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/projects",
+            "description": "Dave (College B) should only see College B projects + cross-college projects. ZERO College A private projects."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎯 Matchmaking",
+      "item": [
+        {
+          "name": "Match Projects for Alice (Jaccard ranked)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/match/projects",
+            "description": "Returns top 10 projects matched to Alice's skills using Jaccard similarity. Redis-cached for 5 min."
+          }
+        },
+        {
+          "name": "Match Users for Project (Dave ranks #1)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/match/users/{{project_id}}",
+            "description": "Returns top 10 users for a project. Dave should rank high due to Python+ML skills."
+          }
+        }
+      ]
+    },
+    {
+      "name": "⭐ Reputation",
+      "item": [
+        {
+          "name": "Alice Rates Dave (5 stars)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/reputation/projects/{{project_id}}/rate",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ratedUserId\": \"{{dave_id}}\",\n  \"score\": 5,\n  \"comment\": \"Excellent ML skills and great cross-college collaboration!\"\n}"
+            },
+            "description": "Both Alice and Dave must be members of the project. Reputation recalculates synchronously."
+          }
+        },
+        {
+          "name": "Get Dave's Rating History",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/reputation/users/{{dave_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "💬 Messages",
+      "item": [
+        {
+          "name": "Send Message to Project (Alice)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/messages/projects/{{project_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Hey team! Let's sync on the ML model architecture tomorrow at 3pm.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Send Message to Project (Dave — College B)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Host", "value": "{{college_b_host}}" },
+              { "key": "Authorization", "value": "Bearer {{dave_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/messages/projects/{{project_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Sounds great Alice! I've been working on the neural network design. See you tomorrow!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Project Messages (paginated)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Host", "value": "{{college_a_host}}" },
+              { "key": "Authorization", "value": "Bearer {{alice_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/projects/{{project_id}}?page=1&limit=50",
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "50" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

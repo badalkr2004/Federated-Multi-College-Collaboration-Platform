@@ -77,7 +77,7 @@ This creates:
 npm run dev
 ```
 
-Server runs at: http://localhost:3000
+Server runs at: http://localhost:8000
 
 ## 🔐 OAuth Setup Instructions
 
@@ -88,7 +88,7 @@ Server runs at: http://localhost:3000
 3. Go to **APIs & Services** → **Credentials**
 4. Click **Create Credentials** → **OAuth client ID**
 5. Choose **Web application**
-6. Add authorized redirect URI: `http://localhost:3000/api/auth/google/callback`
+6. Add authorized redirect URI: `http://localhost:8000/api/auth/google/callback`
 7. Copy Client ID and Client Secret to `.env`
 
 ### GitHub OAuth
@@ -98,7 +98,7 @@ Server runs at: http://localhost:3000
 3. Fill in:
    - Application name: Your app name
    - Homepage URL: `http://localhost:3000`
-   - Callback URL: `http://localhost:3000/api/auth/github/callback`
+   - Callback URL: `http://localhost:8000/api/auth/github/callback`
 4. Copy Client ID and generate a Client Secret
 5. Add to `.env`
 

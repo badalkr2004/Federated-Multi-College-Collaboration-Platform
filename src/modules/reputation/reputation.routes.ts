@@ -19,7 +19,7 @@ router.post(
         req.user!.userId,
         req.body,
       );
-      sendSuccess(res, rating, 'Rating submitted', 201);
+      sendSuccess(res, rating, 201, 'Rating submitted');
     } catch (err) {
       next(err);
     }

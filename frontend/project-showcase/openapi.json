@@ -1,0 +1,646 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "CollabHub v2 - Federated Multi-College Platform API",
+    "version": "1.0.0",
+    "description": "Swagger/OpenAPI documentation derived from docs/collabhub.postman_collection.json and aligned with the implemented Express module routes. Presenter: Badal Kumar."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    { "name": "Health" },
+    { "name": "Platform Admin" },
+    { "name": "Onboarding" },
+    { "name": "Auth" },
+    { "name": "Users" },
+    { "name": "Projects" },
+    { "name": "Matchmaking" },
+    { "name": "Reputation" },
+    { "name": "Messages" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/admin/auth/login": {
+      "post": {
+        "tags": ["Platform Admin"],
+        "summary": "Super admin login",
+        "requestBody": { "$ref": "#/components/requestBodies/AdminLogin" },
+        "responses": { "200": { "$ref": "#/components/responses/AuthSuccess" } }
+      }
+    },
+    "/api/v1/admin/requests": {
+      "get": {
+        "tags": ["Platform Admin"],
+        "summary": "List college onboarding requests",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "approved", "rejected"]
+            }
+          }
+        ],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/admin/requests/{id}/approve": {
+      "post": {
+        "tags": ["Platform Admin"],
+        "summary": "Approve college request and provision tenant",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Id" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/admin/requests/{id}/reject": {
+      "post": {
+        "tags": ["Platform Admin"],
+        "summary": "Reject college request",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Id" }],
+        "requestBody": { "$ref": "#/components/requestBodies/Reject" },
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/admin/colleges": {
+      "get": {
+        "tags": ["Platform Admin"],
+        "summary": "List colleges",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/admin/colleges/{id}/deactivate": {
+      "patch": {
+        "tags": ["Platform Admin"],
+        "summary": "Deactivate college tenant",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Id" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/onboarding/request": {
+      "post": {
+        "tags": ["Onboarding"],
+        "summary": "Submit college onboarding request",
+        "requestBody": { "$ref": "#/components/requestBodies/CollegeRequest" },
+        "responses": { "201": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/onboarding/request/{id}/status": {
+      "get": {
+        "tags": ["Onboarding"],
+        "summary": "Check college onboarding request status",
+        "parameters": [{ "$ref": "#/components/parameters/Id" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register tenant-scoped student",
+        "parameters": [
+          { "$ref": "#/components/parameters/Host" },
+          { "$ref": "#/components/parameters/CollegeKey" }
+        ],
+        "requestBody": { "$ref": "#/components/requestBodies/Register" },
+        "responses": { "201": { "$ref": "#/components/responses/AuthSuccess" } }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login tenant-scoped student",
+        "parameters": [
+          { "$ref": "#/components/parameters/Host" },
+          { "$ref": "#/components/parameters/CollegeKey" }
+        ],
+        "requestBody": { "$ref": "#/components/requestBodies/Login" },
+        "responses": { "200": { "$ref": "#/components/responses/AuthSuccess" } }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Logout current JWT session",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Host" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get authenticated user from auth module",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Host" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get current user profile",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Host" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      },
+      "patch": {
+        "tags": ["Users"],
+        "summary": "Update current user profile",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Host" }],
+        "requestBody": { "$ref": "#/components/requestBodies/UpdateProfile" },
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/users/me/skills": {
+      "patch": {
+        "tags": ["Users"],
+        "summary": "Update skills and clear match cache",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Host" }],
+        "requestBody": { "$ref": "#/components/requestBodies/UpdateSkills" },
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get public user profile",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Host" },
+          { "$ref": "#/components/parameters/Id" }
+        ],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/projects": {
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Create project",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Host" }],
+        "requestBody": { "$ref": "#/components/requestBodies/CreateProject" },
+        "responses": { "201": { "$ref": "#/components/responses/Success" } }
+      },
+      "get": {
+        "tags": ["Projects"],
+        "summary": "List visible projects for tenant",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Host" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/projects/{id}": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "Get project with members",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Host" },
+          { "$ref": "#/components/parameters/Id" }
+        ],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      },
+      "patch": {
+        "tags": ["Projects"],
+        "summary": "Update owner project",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Host" },
+          { "$ref": "#/components/parameters/Id" }
+        ],
+        "requestBody": { "$ref": "#/components/requestBodies/UpdateProject" },
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/projects/{id}/join": {
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Join an open visible project",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Host" },
+          { "$ref": "#/components/parameters/Id" }
+        ],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/projects/{id}/leave": {
+      "delete": {
+        "tags": ["Projects"],
+        "summary": "Leave a joined project",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Host" },
+          { "$ref": "#/components/parameters/Id" }
+        ],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/match/projects": {
+      "get": {
+        "tags": ["Matchmaking"],
+        "summary": "Rank visible projects for current user",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Host" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/match/users/{projectId}": {
+      "get": {
+        "tags": ["Matchmaking"],
+        "summary": "Rank candidate users for a project",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Host" },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/reputation/projects/{id}/rate": {
+      "post": {
+        "tags": ["Reputation"],
+        "summary": "Rate a project collaborator",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Host" },
+          { "$ref": "#/components/parameters/Id" }
+        ],
+        "requestBody": { "$ref": "#/components/requestBodies/Rate" },
+        "responses": { "201": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/reputation/users/{id}": {
+      "get": {
+        "tags": ["Reputation"],
+        "summary": "Get user rating history",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Host" },
+          { "$ref": "#/components/parameters/Id" }
+        ],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api/v1/messages/projects/{id}": {
+      "post": {
+        "tags": ["Messages"],
+        "summary": "Send project message",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Host" },
+          { "$ref": "#/components/parameters/Id" }
+        ],
+        "requestBody": { "$ref": "#/components/requestBodies/SendMessage" },
+        "responses": { "201": { "$ref": "#/components/responses/Success" } }
+      },
+      "get": {
+        "tags": ["Messages"],
+        "summary": "Get project messages",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Host" },
+          { "$ref": "#/components/parameters/Id" },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "default": 1 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 50 }
+          }
+        ],
+        "responses": { "200": { "$ref": "#/components/responses/Paginated" } }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "parameters": {
+      "Id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string", "format": "uuid" }
+      },
+      "Host": {
+        "name": "Host",
+        "in": "header",
+        "required": true,
+        "schema": { "type": "string", "example": "projects.a.localhost" }
+      },
+      "CollegeKey": {
+        "name": "X-College-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "cc_live_collegea000000000000000000000000000"
+        }
+      }
+    },
+    "requestBodies": {
+      "AdminLogin": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/AdminLogin" }
+          }
+        }
+      },
+      "Reject": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Reject" }
+          }
+        }
+      },
+      "CollegeRequest": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/CollegeRequest" }
+          }
+        }
+      },
+      "Register": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Register" }
+          }
+        }
+      },
+      "Login": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Login" }
+          }
+        }
+      },
+      "UpdateProfile": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/UpdateProfile" }
+          }
+        }
+      },
+      "UpdateSkills": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/UpdateSkills" }
+          }
+        }
+      },
+      "CreateProject": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/CreateProject" }
+          }
+        }
+      },
+      "UpdateProject": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/UpdateProject" }
+          }
+        }
+      },
+      "Rate": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Rate" }
+          }
+        }
+      },
+      "SendMessage": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/SendMessage" }
+          }
+        }
+      }
+    },
+    "responses": {
+      "Success": {
+        "description": "Standard success response",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+          }
+        }
+      },
+      "AuthSuccess": {
+        "description": "JWT token and user",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/AuthResponse" }
+          }
+        }
+      },
+      "Paginated": {
+        "description": "Paginated success response",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ApiPaginated" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ApiSuccess": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "data": { "type": "object" },
+          "message": { "type": "string" }
+        }
+      },
+      "ApiPaginated": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "data": { "type": "array", "items": { "type": "object" } },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "integer" },
+              "limit": { "type": "integer" },
+              "total": { "type": "integer" }
+            }
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "token": { "type": "string" },
+              "user": { "$ref": "#/components/schemas/UserPublic" }
+            }
+          }
+        }
+      },
+      "AdminLogin": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" }
+        }
+      },
+      "Reject": {
+        "type": "object",
+        "required": ["reason"],
+        "properties": { "reason": { "type": "string", "minLength": 10 } }
+      },
+      "CollegeRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "domain",
+          "emailDomain",
+          "contactName",
+          "contactEmail"
+        ],
+        "properties": {
+          "name": { "type": "string", "example": "College C" },
+          "domain": { "type": "string", "example": "projects.c.localhost" },
+          "emailDomain": { "type": "string", "example": "@c.ac.in" },
+          "contactName": { "type": "string", "example": "Dr. Smith" },
+          "contactEmail": { "type": "string", "format": "email" }
+        }
+      },
+      "Register": {
+        "type": "object",
+        "required": ["name", "email", "password"],
+        "properties": {
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "minLength": 8 }
+        }
+      },
+      "Login": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" }
+        }
+      },
+      "UpdateProfile": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "bio": { "type": "string", "maxLength": 500 }
+        }
+      },
+      "UpdateSkills": {
+        "type": "object",
+        "required": ["skills"],
+        "properties": {
+          "skills": {
+            "type": "array",
+            "maxItems": 20,
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "CreateProject": {
+        "type": "object",
+        "required": ["title", "description", "requiredSkills"],
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "requiredSkills": { "type": "array", "items": { "type": "string" } },
+          "crossCollege": { "type": "boolean", "default": false },
+          "maxMembers": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 20,
+            "default": 5
+          }
+        }
+      },
+      "UpdateProject": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "requiredSkills": { "type": "array", "items": { "type": "string" } },
+          "status": {
+            "type": "string",
+            "enum": ["open", "in_progress", "completed", "cancelled"]
+          },
+          "maxMembers": { "type": "integer", "minimum": 2, "maximum": 20 }
+        }
+      },
+      "Rate": {
+        "type": "object",
+        "required": ["ratedUserId", "score"],
+        "properties": {
+          "ratedUserId": { "type": "string", "format": "uuid" },
+          "score": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "comment": { "type": "string", "maxLength": 500 }
+        }
+      },
+      "SendMessage": {
+        "type": "object",
+        "required": ["content"],
+        "properties": { "content": { "type": "string", "maxLength": 2000 } }
+      },
+      "UserPublic": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "email": { "type": "string" },
+          "skills": { "type": "array", "items": { "type": "string" } },
+          "reputation": { "type": "integer" },
+          "collegeId": { "type": "string", "format": "uuid" }
+        }
+      }
+    }
+  }
+}

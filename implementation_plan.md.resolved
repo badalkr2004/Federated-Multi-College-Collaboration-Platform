@@ -208,17 +208,17 @@ After the backend is running, you can verify with these steps:
 
 ```bash
 # Register a new user
-curl -X POST http://localhost:3000/api/auth/register \
+curl -X POST http://localhost:8000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"SecurePass123!"}'
 
 # Login
-curl -X POST http://localhost:3000/api/auth/login \
+curl -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"SecurePass123!"}'
 
 # Access protected route (use token from login response)
-curl http://localhost:3000/api/users/me \
+curl http://localhost:8000/api/users/me \
   -H "Authorization: Bearer <access_token>"
 ```
 

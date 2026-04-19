@@ -22,7 +22,7 @@ router.post(
         req.user!.collegeId,
         req.body,
       );
-      sendSuccess(res, message, 'Message sent', 201);
+      sendSuccess(res, message, 201, 'Message sent');
     } catch (err) {
       next(err);
     }

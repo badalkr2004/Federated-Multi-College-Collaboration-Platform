@@ -5,18 +5,22 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
-import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
-import { apiLimiter } from './middleware/rateLimiter.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import { resolveTenant } from './middleware/resolveTenant.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { notFoundHandler } from './middleware/errorHandler.js';
+import { authLimiter, apiLimiter, onboardingLimiter } from './middleware/rateLimiter.js';
 
 // Module routers
+import { router as onboardingRouter } from './modules/onboarding/index.js';
+import { router as adminRouter } from './modules/admin/index.js';
 import { router as authRouter } from './modules/auth/index.js';
 import { router as usersRouter } from './modules/users/index.js';
 import { router as projectsRouter } from './modules/projects/index.js';
 import { router as matchRouter } from './modules/match/index.js';
 import { router as reputationRouter } from './modules/reputation/index.js';
 import { router as messagesRouter } from './modules/messages/index.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export function createApp(): express.Application {
   const app = express();
@@ -28,8 +32,7 @@ export function createApp(): express.Application {
   app.use(
     cors({
       origin: (origin, cb) => {
-        // Allow any localhost origin in development (covers file://, 5173, 5174, etc.)
-        if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1') || origin === 'null') {
+        if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
           cb(null, true);
         } else {
           cb(null, env.NODE_ENV === 'production' ? false : true);
@@ -37,7 +40,7 @@ export function createApp(): express.Application {
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-College-Key'],
     }),
   );
 
@@ -46,29 +49,31 @@ export function createApp(): express.Application {
   app.use(express.urlencoded({ extended: true, limit: '10kb' }));
   app.use(cookieParser());
 
-  // Health check (unauthenticated)
+  // Health check (no auth, no tenant)
   app.get('/health', (_req, res) => {
-    res.json({
-      success: true,
-      data: { status: 'healthy', timestamp: new Date().toISOString(), uptime: process.uptime() },
-    });
+    res.json({ success: true, data: { status: 'healthy', timestamp: new Date().toISOString(), uptime: process.uptime() } });
   });
 
-  // API v1
-  app.use('/api/v1', apiLimiter);
-  app.use('/api/v1/auth', authRouter);
-  app.use('/api/v1/users', usersRouter);
-  app.use('/api/v1/projects', projectsRouter);
-  app.use('/api/v1/match', matchRouter);
-  app.use('/api/v1/reputation', reputationRouter);
-  app.use('/api/v1/messages', messagesRouter);
+  // ── Platform-level routes (NO resolveTenant) ─────────────────────────────
+  // These exist outside any tenant context
+  app.use('/api/v1/onboarding', onboardingLimiter, onboardingRouter);
+  app.use('/api/v1/admin', adminRouter);
+
+  // ── Tenant-scoped routes (resolveTenant runs on each) ────────────────────
+  // resolveTenant resolves Host → college and validates X-College-Key on auth routes
+  app.use('/api/v1/auth', resolveTenant, authLimiter, authRouter);
+  app.use('/api/v1/users', resolveTenant, apiLimiter, usersRouter);
+  app.use('/api/v1/projects', resolveTenant, apiLimiter, projectsRouter);
+  app.use('/api/v1/match', resolveTenant, apiLimiter, matchRouter);
+  app.use('/api/v1/reputation', resolveTenant, apiLimiter, reputationRouter);
+  app.use('/api/v1/messages', resolveTenant, apiLimiter, messagesRouter);
 
   // Serve frontend dashboard
   const frontendPath = path.join(__dirname, '..', 'frontend');
   app.use(express.static(frontendPath));
   app.get('/', (_req, res) => res.sendFile(path.join(frontendPath, 'index.html')));
 
-  // Error handling
+  // Error handling (must be last)
   app.use(notFoundHandler);
   app.use(errorHandler);
 

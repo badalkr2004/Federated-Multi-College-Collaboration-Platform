@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OneCollab | Federated Multi-College Platform</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="deck-shell">
+      <aside class="rail">
+        <div class="brand">
+          <span class="brand-mark">OC</span>
+          <div>
+            <strong>OneCollab</strong>
+            <small>Project Showcase</small>
+          </div>
+        </div>
+        <ol id="slideList" class="slide-list"></ol>
+        <div class="presenter">
+          <span>Presented by</span>
+          <strong>Badal Kumar</strong>
+        </div>
+      </aside>
+
+      <main class="slides" id="slides">
+        <section class="slide cover" data-title="Title">
+          <div class="dot-grid"></div>
+          <div class="cover-copy">
+            <p class="eyebrow">
+              Q5: Federated Multi-College Collaboration Platform
+            </p>
+            <h1>
+              Federated collaboration for colleges, teams, and project builders.
+            </h1>
+            <p class="lead">
+              A multi-tenant platform connecting colleges while preserving data
+              isolation, scalable API design, and intelligent user-project
+              matchmaking.
+            </p>
+            <div class="meta-row">
+              <span>Backend: Complete</span>
+              <span>API: Express + Drizzle</span>
+              <span>Presenter: Badal Kumar</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" data-title="Problem">
+          <p class="eyebrow">Problem Statement</p>
+          <h2>Connect colleges without mixing their private data.</h2>
+          <div class="split">
+            <div class="panel strong">
+              <h3>Q5 Requirement</h3>
+              <p>
+                Design a federated, multi-tenant collaboration platform
+                connecting multiple colleges while ensuring data isolation,
+                scalability, and intelligent matchmaking between users and
+                projects.
+              </p>
+            </div>
+            <div class="grid-cards">
+              <article>
+                <strong>Isolation</strong
+                ><span
+                  >Host-based tenant resolution with college API key validation
+                  and JWT tenant checks.</span
+                >
+              </article>
+              <article>
+                <strong>Collaboration</strong
+                ><span
+                  >Projects, members, messages, ratings, and cross-college team
+                  formation.</span
+                >
+              </article>
+              <article>
+                <strong>Matchmaking</strong
+                ><span
+                  >Jaccard skill overlap plus normalized reputation
+                  scoring.</span
+                >
+              </article>
+              <article>
+                <strong>Scale</strong
+                ><span
+                  >Neon PostgreSQL, Redis caching, rate limiting, stateless JWT,
+                  modular routes.</span
+                >
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" data-title="Solution">
+          <p class="eyebrow">Product Solution</p>
+          <h2>OneCollab: a tenant-aware network for student project teams.</h2>
+          <div class="timeline">
+            <div>
+              <span>01</span><strong>College onboarding</strong>
+              <p>
+                Colleges request access; platform admin approves and provisions
+                API keys.
+              </p>
+            </div>
+            <div>
+              <span>02</span><strong>Tenant auth</strong>
+              <p>
+                Students register/login through their college domain and key.
+              </p>
+            </div>
+            <div>
+              <span>03</span><strong>Project discovery</strong>
+              <p>Students browse own-college and cross-college projects.</p>
+            </div>
+            <div>
+              <span>04</span><strong>Smart matching</strong>
+              <p>Skills and reputation rank projects and teammates.</p>
+            </div>
+            <div>
+              <span>05</span><strong>Team workflow</strong>
+              <p>Members join, message, collaborate, and rate peers.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" data-title="Implementation">
+          <p class="eyebrow">Implementation Snapshot</p>
+          <h2>Production-minded backend modules.</h2>
+          <div class="module-grid">
+            <article>
+              <b>Foundation</b
+              ><span
+                >Zod env validation, constants, Pino logger, AppError, response
+                helpers.</span
+              >
+            </article>
+            <article>
+              <b>Security</b
+              ><span
+                >Helmet, CORS, rate limiting, Argon2id password hashing,
+                stateless JWT.</span
+              >
+            </article>
+            <article>
+              <b>Tenant Layer</b
+              ><span
+                >Host resolves college; X-College-Key verifies auth tenant;
+                cache avoids repeated DB hits.</span
+              >
+            </article>
+            <article>
+              <b>Modules</b
+              ><span
+                >Onboarding, admin, auth, users, projects, match, reputation,
+                messages.</span
+              >
+            </article>
+            <article>
+              <b>Database</b
+              ><span
+                >Drizzle ORM with Neon PostgreSQL schemas for tenants, users,
+                teams, ratings, messages.</span
+              >
+            </article>
+            <article>
+              <b>Cache</b
+              ><span
+                >Redis/Upstash for 5-minute matchmaking cache with graceful
+                fallback.</span
+              >
+            </article>
+          </div>
+        </section>
+
+        <section class="slide diagram-slide" data-title="Architecture">
+          <p class="eyebrow">Architecture Diagram</p>
+          <h2>Request flow and platform boundaries.</h2>
+          <svg
+            class="architecture"
+            viewBox="0 0 1180 560"
+            role="img"
+            aria-label="Architecture diagram"
+          >
+            <defs>
+              <marker
+                id="arrow"
+                markerWidth="10"
+                markerHeight="10"
+                refX="8"
+                refY="3"
+                orient="auto"
+              >
+                <path d="M0,0 L0,6 L9,3 z" fill="#111827" />
+              </marker>
+            </defs>
+            <g class="arch-box client">
+              <rect x="30" y="70" width="180" height="90" rx="10" />
+              <text x="120" y="108">Next.js UI</text>
+              <text x="120" y="132">Postman / Browser</text>
+            </g>
+            <g class="arch-box edge">
+              <rect x="270" y="40" width="220" height="150" rx="10" />
+              <text x="380" y="82">Express App</text>
+              <text x="380" y="108">Helmet · CORS</text>
+              <text x="380" y="132">JSON Parser</text>
+              <text x="380" y="156">Error Handler</text>
+            </g>
+            <g class="arch-box middleware">
+              <rect x="540" y="30" width="250" height="170" rx="10" />
+              <text x="665" y="70">Middleware</text>
+              <text x="665" y="100">Rate Limiter</text>
+              <text x="665" y="125">resolveTenant</text>
+              <text x="665" y="150">authenticate JWT</text>
+              <text x="665" y="175">Zod validation</text>
+            </g>
+            <g class="arch-box modules">
+              <rect x="850" y="25" width="280" height="180" rx="10" />
+              <text x="990" y="65">API Modules</text>
+              <text x="990" y="96">Onboarding · Admin · Auth</text>
+              <text x="990" y="122">Users · Projects · Match</text>
+              <text x="990" y="148">Reputation · Messages</text>
+            </g>
+            <g class="arch-box data">
+              <rect x="270" y="330" width="240" height="130" rx="10" />
+              <text x="390" y="375">Neon PostgreSQL</text>
+              <text x="390" y="405">Drizzle ORM</text>
+              <text x="390" y="430">Tenant-filtered rows</text>
+            </g>
+            <g class="arch-box cache">
+              <rect x="585" y="330" width="220" height="130" rx="10" />
+              <text x="695" y="375">Redis / Upstash</text>
+              <text x="695" y="405">Tenant cache</text>
+              <text x="695" y="430">Match cache TTL</text>
+            </g>
+            <g class="arch-box auth">
+              <rect x="875" y="330" width="230" height="130" rx="10" />
+              <text x="990" y="375">Security</text>
+              <text x="990" y="405">Argon2id</text>
+              <text x="990" y="430">JWT Claims</text>
+            </g>
+            <path class="wire" d="M210 115 H270" marker-end="url(#arrow)" />
+            <path class="wire" d="M490 115 H540" marker-end="url(#arrow)" />
+            <path class="wire" d="M790 115 H850" marker-end="url(#arrow)" />
+            <path
+              class="wire"
+              d="M990 205 C990 270, 390 260, 390 330"
+              marker-end="url(#arrow)"
+            />
+            <path class="wire" d="M665 200 V330" marker-end="url(#arrow)" />
+            <path class="wire" d="M990 205 V330" marker-end="url(#arrow)" />
+          </svg>
+        </section>
+
+        <section class="slide diagram-slide" data-title="ERD">
+          <p class="eyebrow">ER Diagram</p>
+          <h2>Database model for tenant isolation and collaboration.</h2>
+          <svg
+            class="erd"
+            viewBox="0 0 1180 610"
+            role="img"
+            aria-label="ER diagram"
+          >
+            <defs>
+              <marker
+                id="erdArrow"
+                markerWidth="8"
+                markerHeight="8"
+                refX="7"
+                refY="3"
+                orient="auto"
+              >
+                <path d="M0,0 L0,6 L8,3 z" fill="#334155" />
+              </marker>
+            </defs>
+            <g class="entity">
+              <rect x="40" y="50" width="230" height="150" />
+              <text class="entity-title" x="155" y="82">colleges</text>
+              <text x="60" y="112">id PK</text>
+              <text x="60" y="136">slug, domain, api_key</text>
+              <text x="60" y="160">email_domain</text>
+              <text x="60" y="184">is_active</text>
+            </g>
+            <g class="entity">
+              <rect x="360" y="35" width="240" height="190" />
+              <text class="entity-title" x="480" y="68">users</text>
+              <text x="380" y="98">id PK</text>
+              <text x="380" y="122">name, email</text>
+              <text x="380" y="146">skills[]</text>
+              <text x="380" y="170">reputation, avg_rating</text>
+              <text x="380" y="194">college_id FK</text>
+            </g>
+            <g class="entity">
+              <rect x="710" y="35" width="250" height="190" />
+              <text class="entity-title" x="835" y="68">projects</text>
+              <text x="730" y="98">id PK</text>
+              <text x="730" y="122">title, description</text>
+              <text x="730" y="146">required_skills[]</text>
+              <text x="730" y="170">cross_college, status</text>
+              <text x="730" y="194">owner_id, college_id</text>
+            </g>
+            <g class="entity">
+              <rect x="390" y="330" width="240" height="150" />
+              <text class="entity-title" x="510" y="362">team_members</text>
+              <text x="410" y="392">id PK</text>
+              <text x="410" y="416">project_id FK</text>
+              <text x="410" y="440">user_id FK</text>
+              <text x="410" y="464">role, joined_at</text>
+            </g>
+            <g class="entity">
+              <rect x="720" y="330" width="230" height="150" />
+              <text class="entity-title" x="835" y="362">messages</text>
+              <text x="740" y="392">id PK</text>
+              <text x="740" y="416">project_id FK</text>
+              <text x="740" y="440">sender_id FK</text>
+              <text x="740" y="464">content</text>
+            </g>
+            <g class="entity">
+              <rect x="40" y="330" width="240" height="170" />
+              <text class="entity-title" x="160" y="362">ratings</text>
+              <text x="60" y="392">id PK</text>
+              <text x="60" y="416">project_id FK</text>
+              <text x="60" y="440">rater_id, rated_user_id</text>
+              <text x="60" y="464">score, comment</text>
+              <text x="60" y="488">college ids</text>
+            </g>
+            <g class="entity">
+              <rect x="990" y="235" width="160" height="190" />
+              <text class="entity-title" x="1070" y="268">
+                college_requests
+              </text>
+              <text x="1010" y="298">id PK</text>
+              <text x="1010" y="322">domain</text>
+              <text x="1010" y="346">status</text>
+              <text x="1010" y="370">contact</text>
+              <text x="1010" y="394">reviewed_by</text>
+            </g>
+            <path class="rel" d="M270 125 H360" marker-end="url(#erdArrow)" />
+            <path class="rel" d="M600 130 H710" marker-end="url(#erdArrow)" />
+            <path class="rel" d="M480 225 V330" marker-end="url(#erdArrow)" />
+            <path
+              class="rel"
+              d="M710 160 C640 210, 590 270, 550 330"
+              marker-end="url(#erdArrow)"
+            />
+            <path
+              class="rel"
+              d="M710 180 C660 250, 280 255, 190 330"
+              marker-end="url(#erdArrow)"
+            />
+            <path class="rel" d="M835 225 V330" marker-end="url(#erdArrow)" />
+            <path class="rel" d="M990 330 H960" marker-end="url(#erdArrow)" />
+          </svg>
+        </section>
+
+        <section class="slide" data-title="API">
+          <p class="eyebrow">Swagger API Documentation</p>
+          <h2>OpenAPI created from the Postman collection.</h2>
+          <div class="api-layout">
+            <div class="panel">
+              <h3>API groups</h3>
+              <ul class="check-list">
+                <li>Health check</li>
+                <li>Platform admin</li>
+                <li>College onboarding</li>
+                <li>Tenant auth for College A/B</li>
+                <li>Users, projects, matchmaking</li>
+                <li>Reputation and project messages</li>
+              </ul>
+            </div>
+            <div class="panel swagger-card">
+              <h3>Generated files</h3>
+              <p><code>openapi.json</code> contains the Swagger spec.</p>
+              <p>
+                <code>swagger.html</code> opens Swagger UI for interactive
+                browsing.
+              </p>
+              <a class="button" href="./swagger.html" target="_blank"
+                >Open Swagger Docs</a
+              >
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" data-title="Algorithms">
+          <p class="eyebrow">Intelligent Matchmaking</p>
+          <h2>We engineered a dual-algorithm approach to connect the right talent with the most suitable projects.</h2>
+          <div class="formula" style="font-size: clamp(1.2rem, 2.5vw, 2.5rem);">
+            <span>Match Score =</span>
+            <b>0.7 × Jaccard Index</b>
+            <span>+</span>
+            <b>0.3 × Reputation Score</b>
+          </div>
+          <div class="grid-cards three">
+            <article>
+              <strong>1. Jaccard Similarity Algorithm</strong>
+              <span>We use the Jaccard Index to mathematically compute technical compatibility. It calculates the intersection of a user's skills and a project's required skills divided by their union, guaranteeing precise alignment.</span>
+            </article>
+            <article>
+              <strong>2. Reputation Scoring Algorithm</strong>
+              <span>To establish trust across the platform, we implemented a composite reputation model. It dynamically normalizes historical peer ratings, rewarding consistent, highly-rated collaboration over time.</span>
+            </article>
+            <article>
+              <strong>Performance Optimization</strong>
+              <span>By utilizing an in-memory Redis cache for these computationally intensive sorting algorithms, we deliver sub-millisecond, instantaneous ranking results to the end-user.</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="slide" data-title="Security">
+          <p class="eyebrow">Security & Isolation</p>
+          <h2>Defense layers for tenant-safe collaboration.</h2>
+          <div class="security-grid">
+            <article>
+              <span>01</span><b>Tenant resolver</b>
+              <p>
+                Host maps to an active college. Unknown domains are rejected.
+              </p>
+            </article>
+            <article>
+              <span>02</span><b>College API key</b>
+              <p>
+                Register/login routes validate X-College-Key against the
+                resolved tenant.
+              </p>
+            </article>
+            <article>
+              <span>03</span><b>JWT claims</b>
+              <p>
+                Authenticated routes compare user token tenant with request
+                tenant context.
+              </p>
+            </article>
+            <article>
+              <span>04</span><b>Access rules</b>
+              <p>
+                Private projects remain within college; cross-college projects
+                opt into federation.
+              </p>
+            </article>
+            <article>
+              <span>05</span><b>Rate limits</b>
+              <p>Onboarding, auth, and API requests have separate throttles.</p>
+            </article>
+            <article>
+              <span>06</span><b>Validation</b>
+              <p>
+                Zod schemas validate every request body before service logic.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="slide" data-title="Demo">
+          <p class="eyebrow">Seeded Demo Flow</p>
+          <h2>Ready stories for judging and API testing.</h2>
+          <div class="demo-flow">
+            <div>
+              <b>Alice</b><span>College A · React · TypeScript · Node.js</span>
+            </div>
+            <div>
+              <b>Bob</b><span>College A · Python · ML · Data Science</span>
+            </div>
+            <div><b>Dave</b><span>College B · Python · ML · FastAPI</span></div>
+            <div>
+              <b>Eve</b><span>College B · DevOps · Docker · Kubernetes</span>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Showcase script</h3>
+            <p>
+              Login as Alice, browse visible projects, run project matches, let
+              Dave join a cross-college project, send messages, then submit a
+              collaborator rating.
+            </p>
+          </div>
+        </section>
+
+        <section class="slide" data-title="Summary">
+          <p class="eyebrow">Final Summary</p>
+          <h2>What was delivered</h2>
+          <div class="summary">
+            <div>
+              <strong>Multi-tenant backend</strong
+              ><span
+                >College-aware routing, admin onboarding, and tenant
+                validation.</span
+              >
+            </div>
+            <div>
+              <strong>Collaboration modules</strong
+              ><span
+                >Users, projects, team members, messaging, reputation,
+                matchmaking.</span
+              >
+            </div>
+            <div>
+              <strong>Scalable foundations</strong
+              ><span
+                >Neon PostgreSQL, Redis cache, modular Express services, Zod
+                validation.</span
+              >
+            </div>
+            <div>
+              <strong>Documentation</strong
+              ><span
+                >Postman collection, generated OpenAPI spec, ERD, architecture,
+                showcase deck.</span
+              >
+            </div>
+          </div>
+          <footer class="thanks">
+            <span>Presented by</span>
+            <b>Badal Kumar</b>
+          </footer>
+        </section>
+      </main>
+
+      <div class="controls">
+        <button id="prevBtn" type="button">Prev</button>
+        <span id="counter">1 / 10</span>
+        <button id="nextBtn" type="button">Next</button>
+      </div>
+    </div>
+    <script src="./script.js"></script>
+  </body>
+</html>

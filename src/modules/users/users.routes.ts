@@ -27,7 +27,7 @@ router.patch(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const user = await usersService.updateProfile(req.user!.userId, req.body);
-      sendSuccess(res, user, 'Profile updated');
+      sendSuccess(res, user, 200, 'Profile updated');
     } catch (err) {
       next(err);
     }
@@ -41,7 +41,7 @@ router.patch(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const user = await usersService.updateSkills(req.user!.userId, req.body);
-      sendSuccess(res, user, 'Skills updated');
+      sendSuccess(res, user, 200, 'Skills updated');
     } catch (err) {
       next(err);
     }

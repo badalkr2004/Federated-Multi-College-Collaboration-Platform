@@ -7,11 +7,11 @@ export const users = pgTable('users', {
   passwordHash: text('password_hash').notNull(),
   skills: text('skills').array().notNull().default([]),
   bio: text('bio'),
+  role: text('role', { enum: ['user', 'super_admin'] }).notNull().default('user'),
   reputation: integer('reputation').notNull().default(0),
   projectsCompleted: integer('projects_completed').notNull().default(0),
-  avgRating: numeric('avg_rating', { precision: 3, scale: 2 }).default('0.00'),
-  collegeId: uuid('college_id').notNull(),
-  collegeSlug: text('college_slug').notNull(),
+  avgRating: numeric('avg_rating', { precision: 3, scale: 2 }).notNull().default('0.00'),
+  collegeId: uuid('college_id'),                 // null for super_admin only
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });

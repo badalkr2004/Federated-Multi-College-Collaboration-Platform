@@ -10,7 +10,8 @@ export const projects = pgTable('projects', {
     .default('open'),
   crossCollege: boolean('cross_college').notNull().default(false),
   ownerId: uuid('owner_id').notNull(),
-  ownerCollegeId: uuid('owner_college_id').notNull(),
+  ownerCollegeId: uuid('owner_college_id').notNull(), // which college created it
+  collegeId: uuid('college_id').notNull(),             // same as ownerCollegeId; used for consistent filtering
   maxMembers: integer('max_members').notNull().default(5),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
