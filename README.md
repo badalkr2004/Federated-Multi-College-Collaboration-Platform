@@ -1,3 +1,9 @@
+<div align="center">
+  <img src="./frontend/one-collab/public/logoc-1.webp" alt="CollabOne Logo" />
+  <br /><br />
+  <img src="./frontend/one-collab/public/branding-image.png" alt="Hackathon Branding" />
+</div>
+
 # CollabOne — Federated Multi-College Platform
 
 **collabOne** is a Federated Multi-College Platform with a modular monolith architecture. It is built as a complete Node.js/Express backend, heavily featuring multi-tenant isolation via subdomains and row-level database security.
