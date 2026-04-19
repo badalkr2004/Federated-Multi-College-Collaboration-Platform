@@ -3,12 +3,12 @@ import postgres from "postgres";
 import * as schema from "./schema";
 import { env } from "../utils/env";
 
-// Create postgres connection for Neon
-const connectionString = env.DATABASE_URL;
+// SSL is required for Neon (cloud) but must be disabled for local Docker postgres.
+// Set PGSSLMODE=disable in docker-compose to toggle.
+const sslMode = process.env.PGSSLMODE === "disable" ? false : ("require" as const);
 
-// For Neon, we need SSL mode
-const client = postgres(connectionString, {
-  ssl: "require",
+const client = postgres(env.DATABASE_URL, {
+  ssl: sslMode,
   max: 10, // Connection pool size
   idle_timeout: 20,
   connect_timeout: 10,

@@ -1,0 +1,124 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  OneCollab — Full-stack Docker Compose
+#
+#  Services:
+#    postgres   — Local PostgreSQL 16 (replaces Neon in Docker env)
+#    redis      — Local Redis 7       (replaces Upstash in Docker env)
+#    backend    — Express API (port 8000) — auto-migrates + seeds on startup
+#    frontend   — Next.js UI (port 3000)
+#
+#  Run with:
+#    docker compose up --build
+#
+#  Access:
+#    Frontend  → http://localhost:3000
+#    API       → http://localhost:8000
+#    API Tester→ open frontend/index.html in browser
+#
+#  Tenant routing (add to your hosts file once):
+#    127.0.0.1  projects.a.localhost
+#    127.0.0.1  projects.b.localhost
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  # ── Database ────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: onecoll_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: onecoll
+      POSTGRES_PASSWORD: onecoll_secret
+      POSTGRES_DB: onecolldb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U onecoll -d onecolldb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Cache ───────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: onecoll_redis
+    restart: unless-stopped
+    command: redis-server --save "" --appendonly no
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ── Backend (API) ────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: onecoll_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      # ── Server ──────────────────────────────────────
+      NODE_ENV: production
+      PORT: 8000
+      FRONTEND_URL: http://localhost:3000
+      API_URL: http://localhost:8000
+
+      # ── Database (local Docker PG) ──────────────────
+      DATABASE_URL: postgresql://onecoll:onecoll_secret@postgres:5432/onecolldb
+      # Disable SSL for local Docker postgres
+      PGSSLMODE: disable
+
+      # ── Redis (local Docker) ────────────────────────
+      REDIS_URL: redis://redis:6379
+
+      # ── JWT / Sessions ──────────────────────────────
+      JWT_SECRET: docker-onecoll-jwt-secret-minimum-32-chars-here
+      JWT_ACCESS_SECRET: docker-onecoll-jwt-access-secret-min-32-ch
+      JWT_REFRESH_SECRET: docker-onecoll-jwt-refresh-secret-min-32ch
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      SESSION_SECRET: docker-onecoll-session-secret-minimum-32chars
+      JWT_EXPIRES_IN: 7d
+
+      # ── Super Admin (seeded on startup) ─────────────
+      SUPER_ADMIN_EMAIL: superadmin@platform.ac.in
+      SUPER_ADMIN_PASSWORD: SuperSecurePass123!
+
+      # ── Tenant domains ──────────────────────────────
+      DOMAIN_SUFFIX: localhost
+
+      # ── Optional (leave empty unless you have keys) ─
+      RESEND_API_KEY: ""
+      ADMIN_EMAIL: admin@platform.ac.in
+
+  # ── Frontend (Next.js) ───────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend/one-collab
+      dockerfile: Dockerfile
+      args:
+        # These are baked into the Next.js build at compile time
+        NEXT_PUBLIC_API_BASE: http://localhost:8000
+        NEXT_PUBLIC_COLLEGE_A_HOST: projects.a.localhost
+        NEXT_PUBLIC_COLLEGE_B_HOST: projects.b.localhost
+        NEXT_PUBLIC_COLLEGE_A_KEY: cc_live_collegea000000000000000000000000000
+        NEXT_PUBLIC_COLLEGE_B_KEY: cc_live_collegeb000000000000000000000000000
+    container_name: onecoll_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:

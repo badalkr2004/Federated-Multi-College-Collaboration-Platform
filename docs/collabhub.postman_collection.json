@@ -1,7 +1,7 @@
 {
   "info": {
-    "_postman_id": "collabhub-v2-federated-platform",
-    "name": "CollabHub v2 — Federated Multi-College Platform",
+    "_postman_id": "collabone-v2-federated-platform",
+    "name": "CollabOne v2 — Federated Multi-College Platform",
     "description": "Complete API collection for the federated multi-college collaboration platform. Includes onboarding, admin, tenant auth, users, projects, matchmaking, reputation, and messaging.\n\n**Setup:**\n1. Add to hosts file: `127.0.0.1 projects.a.localhost` and `127.0.0.1 projects.b.localhost`\n2. Start server: `bun run dev`\n3. Run seed: `bun run db:seed`\n4. Use 'Admin Login' first to get super_admin_token\n5. Use 'Login as Alice' to get alice_token",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },

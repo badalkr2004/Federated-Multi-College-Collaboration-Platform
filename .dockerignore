@@ -1,0 +1,10 @@
+node_modules
+dist
+.next
+.git
+.env
+.env.*
+*.log
+coverage
+frontend/one-collab/node_modules
+frontend/one-collab/.next

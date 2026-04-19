@@ -158,4 +158,4 @@ export default function RadialOrbitalTimeline({
   );
 }
 
-export type { TimelineItem };
+

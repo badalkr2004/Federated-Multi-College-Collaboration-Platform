@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "CollabHub v2 - Federated Multi-College Platform API",
+    "title": "OneCollab v2 - Federated Multi-College Platform API",
     "version": "1.0.0",
     "description": "Swagger/OpenAPI documentation derived from docs/collabhub.postman_collection.json and aligned with the implemented Express module routes. Presenter: Badal Kumar."
   },
