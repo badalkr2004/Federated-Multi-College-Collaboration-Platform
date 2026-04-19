@@ -1,0 +1,20 @@
+export const CONSTANTS = {
+  // Pagination
+  DEFAULT_PAGE: 1,
+  DEFAULT_LIMIT: 20,
+  MAX_LIMIT: 100,
+
+  // Match
+  MATCH_TOP_N: 10,
+  MATCH_CACHE_TTL: 300, // 5 minutes
+
+  // Reputation
+  REPUTATION_RATING_WEIGHT: 0.6,
+  REPUTATION_PER_PROJECT: 2,
+
+  // Rate limiting
+  AUTH_RATE_LIMIT_MAX: 10,
+  AUTH_RATE_LIMIT_WINDOW_MS: 60 * 1000,  // 1 min
+  API_RATE_LIMIT_MAX: 100,
+  API_RATE_LIMIT_WINDOW_MS: 60 * 1000,   // 1 min
+} as const;

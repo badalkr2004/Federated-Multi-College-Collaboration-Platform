@@ -1,0 +1,233 @@
+# Production-Grade Hackathon Backend with Authentication & RBAC
+
+A comprehensive Node.js/Express backend featuring Drizzle ORM with PostgreSQL, multi-method authentication (JWT, sessions, OAuth), and role-based access control.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Database Setup**: You'll need a PostgreSQL database running locally or a hosted instance (e.g., Supabase, Neon, Railway). Please confirm your preferred setup.
+
+> [!IMPORTANT]
+> **OAuth Providers**: To enable Google and GitHub OAuth, you'll need to create OAuth apps and provide the client IDs and secrets. I can set up the code structure, and you can add credentials later.
+
+---
+
+## Proposed Changes
+
+### Project Structure
+
+```
+hackathon-backend/
+├── src/
+│   ├── db/
+│   │   ├── index.ts              # Database connection
+│   │   ├── schema/
+│   │   │   ├── users.ts          # Users table
+│   │   │   ├── sessions.ts       # Sessions table
+│   │   │   ├── roles.ts          # Roles & permissions
+│   │   │   ├── oauth-accounts.ts # OAuth linked accounts
+│   │   │   └── index.ts          # Schema exports
+│   │   └── migrations/           # Drizzle migrations
+│   ├── auth/
+│   │   ├── jwt.ts                # JWT utilities
+│   │   ├── session.ts            # Session management
+│   │   ├── oauth/
+│   │   │   ├── google.ts         # Google OAuth
+│   │   │   └── github.ts         # GitHub OAuth
+│   │   ├── password.ts           # Password hashing
+│   │   └── middleware.ts         # Auth middleware
+│   ├── rbac/
+│   │   ├── permissions.ts        # Permission definitions
+│   │   ├── roles.ts              # Role definitions
+│   │   └── middleware.ts         # RBAC middleware
+│   ├── routes/
+│   │   ├── auth.ts               # Auth routes
+│   │   ├── users.ts              # User routes
+│   │   └── admin.ts              # Admin routes (RBAC protected)
+│   ├── middleware/
+│   │   ├── error-handler.ts      # Global error handler
+│   │   ├── rate-limiter.ts       # Rate limiting
+│   │   └── validation.ts         # Request validation
+│   ├── utils/
+│   │   ├── env.ts                # Environment validation
+│   │   └── logger.ts             # Logging utility
+│   ├── types/
+│   │   └── index.ts              # TypeScript types
+│   └── index.ts                  # App entry point
+├── drizzle.config.ts             # Drizzle configuration
+├── package.json
+├── tsconfig.json
+├── .env.example
+└── README.md
+```
+
+---
+
+### Core Dependencies
+
+| Package | Purpose |
+|---------|---------|
+| `express` | Web framework |
+| `drizzle-orm` | Type-safe ORM |
+| `drizzle-kit` | Migrations & studio |
+| `postgres` | PostgreSQL driver |
+| `jsonwebtoken` | JWT tokens |
+| `argon2` | Password hashing |
+| `passport` | OAuth integration |
+| `passport-google-oauth20` | Google OAuth |
+| `passport-github2` | GitHub OAuth |
+| `zod` | Input validation |
+| `helmet` | Security headers |
+| `cors` | CORS handling |
+| `express-rate-limit` | Rate limiting |
+| `cookie-parser` | Cookie handling |
+| `pino` | Fast logging |
+
+---
+
+### Database Schema
+
+#### [NEW] [users.ts](file:///C:/Users/badal/.gemini/antigravity/scratch/hackathon-backend/src/db/schema/users.ts)
+
+```typescript
+// Users table with email/password auth support
+// Fields: id, email, passwordHash, emailVerified, createdAt, updatedAt
+```
+
+#### [NEW] [sessions.ts](file:///C:/Users/badal/.gemini/antigravity/scratch/hackathon-backend/src/db/schema/sessions.ts)
+
+```typescript
+// Refresh tokens and session tracking
+// Fields: id, userId, token, expiresAt, userAgent, ipAddress, createdAt
+```
+
+#### [NEW] [roles.ts](file:///C:/Users/badal/.gemini/antigravity/scratch/hackathon-backend/src/db/schema/roles.ts)
+
+```typescript
+// RBAC tables: roles, permissions, user_roles
+// Default roles: user, moderator, admin
+// Permissions: user:read, user:write, admin:access, etc.
+```
+
+#### [NEW] [oauth-accounts.ts](file:///C:/Users/badal/.gemini/antigravity/scratch/hackathon-backend/src/db/schema/oauth-accounts.ts)
+
+```typescript
+// Linked OAuth accounts (Google, GitHub)
+// Fields: id, userId, provider, providerAccountId, accessToken, refreshToken
+```
+
+---
+
+### Authentication Features
+
+| Feature | Implementation |
+|---------|----------------|
+| **JWT Auth** | Short-lived access tokens (15min) + refresh token rotation |
+| **Sessions** | HTTP-only secure cookies with Redis/DB session store |
+| **OAuth** | Google & GitHub with account linking |
+| **Password** | Argon2 hashing, secure reset flow |
+| **Verification** | Email verification tokens |
+
+---
+
+### RBAC System
+
+```typescript
+// Role hierarchy
+const ROLES = {
+  USER: 'user',           // Basic access
+  MODERATOR: 'moderator', // Manage content
+  ADMIN: 'admin'          // Full access
+} as const;
+
+// Permission-based access
+const PERMISSIONS = {
+  'users:read': ['user', 'moderator', 'admin'],
+  'users:write': ['moderator', 'admin'],
+  'users:delete': ['admin'],
+  'admin:access': ['admin'],
+  // ... extensible
+};
+```
+
+---
+
+### API Endpoints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/auth/register` | Create account | Public |
+| POST | `/api/auth/login` | Email/password login | Public |
+| POST | `/api/auth/logout` | Logout (revoke tokens) | Required |
+| POST | `/api/auth/refresh` | Refresh access token | Cookie |
+| GET | `/api/auth/google` | Google OAuth start | Public |
+| GET | `/api/auth/google/callback` | Google OAuth callback | Public |
+| GET | `/api/auth/github` | GitHub OAuth start | Public |
+| GET | `/api/auth/github/callback` | GitHub OAuth callback | Public |
+| GET | `/api/users/me` | Current user profile | Required |
+| PATCH | `/api/users/me` | Update profile | Required |
+| GET | `/api/admin/users` | List all users | Admin only |
+| PATCH | `/api/admin/users/:id/role` | Update user role | Admin only |
+
+---
+
+### Security Measures
+
+- **Rate Limiting**: 100 req/15min for auth endpoints
+- **CORS**: Configurable origins whitelist
+- **Helmet**: Security headers (CSP, HSTS, XSS protection)
+- **Input Validation**: Zod schemas for all inputs
+- **HTTP-Only Cookies**: Secure refresh token storage
+- **CSRF Protection**: SameSite=Strict cookies
+- **Password Policy**: Minimum 8 chars, complexity requirements
+
+---
+
+## Verification Plan
+
+### Automated Testing
+
+Since this is a new project, I'll include test setup with the implementation:
+
+```bash
+# Run all tests
+npm test
+
+# Run auth tests specifically
+npm test -- --grep "auth"
+```
+
+### Manual Verification
+
+After the backend is running, you can verify with these steps:
+
+1. **Start PostgreSQL** (Docker or local instance)
+2. **Run migrations**: `npm run db:migrate`
+3. **Start server**: `npm run dev`
+4. **Test endpoints** using the included REST client file or curl:
+
+```bash
+# Register a new user
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"SecurePass123!"}'
+
+# Login
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"SecurePass123!"}'
+
+# Access protected route (use token from login response)
+curl http://localhost:3000/api/users/me \
+  -H "Authorization: Bearer <access_token>"
+```
+
+---
+
+## Questions for You
+
+1. **PostgreSQL**: Do you have PostgreSQL running locally, or would you like me to include a `docker-compose.yml` for easy setup?
+
+2. **OAuth Credentials**: Do you already have Google/GitHub OAuth app credentials, or should I provide instructions for setting them up?
+
+3. **Email Service**: For email verification and password reset, do you have a preferred email service (SendGrid, Resend, etc.), or should I mock these for now?
