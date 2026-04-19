@@ -1,10 +1,30 @@
 <div align="center">
-  <img src="./frontend/one-collab/public/logoc-1.webp" alt="CollabOne Logo" />
-  <br /><br />
-  <img src="./frontend/one-collab/public/branding-image.png" alt="Hackathon Branding" />
+  <img src="./frontend/one-collab/public/logoc-1.webp" alt="CollabOne Logo" width="195" />
+  <br />
+  <img src="./frontend/one-collab/public/branding-image.png" alt="Hackathon Branding" width="200" />
 </div>
 
 # CollabOne — Federated Multi-College Platform
+
+<div align="center">
+  <!-- Technologies -->
+  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white" alt="Bun" />
+  <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
+  <br />
+  <!-- Techniques -->
+  <img src="https://img.shields.io/badge/Architecture-Modular%20Monolith-blueviolet?style=for-the-badge" alt="Modular Monolith" />
+  <img src="https://img.shields.io/badge/Design-Multi--Tenant-success?style=for-the-badge" alt="Multi-Tenant" />
+  <img src="https://img.shields.io/badge/Security-Row--Level-critical?style=for-the-badge" alt="RLS Security" />
+  <img src="https://img.shields.io/badge/Algorithm-Jaccard%20Similarity-informational?style=for-the-badge" alt="Jaccard Engine" />
+  <img src="https://img.shields.io/badge/Auth-Stateless%20JWT-eab308?style=for-the-badge" alt="JWT Auth" />
+</div>
+
+<br />
 
 **collabOne** is a Federated Multi-College Platform with a modular monolith architecture. It is built as a complete Node.js/Express backend, heavily featuring multi-tenant isolation via subdomains and row-level database security.
 
